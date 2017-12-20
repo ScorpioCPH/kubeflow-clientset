@@ -11,15 +11,5 @@ spec:
       spec:
         containers:
         - name: tensorflow
-          image: cargo.caicloud.io/clever-base/tensorflow:1.4.0
-          command:
-          - "/workdir/tensorflow/launch_training.sh"
-          volumeMounts:
-          - name: workdir
-            mountPath: /workdir
-        volumes:
-        - name: workdir
-          glusterfs:
-            endpoints: <gluster-cluster>
-            path: <gluster_vol_subpath>
+          image: cargo.caicloud.io/clever-base/mnist-softmax-cpu:1.0
         restartPolicy: OnFailure
