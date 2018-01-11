@@ -88,13 +88,28 @@ type ChiefSpec struct {
 	TFReplicaIndex int    `json:"tfReplicaIndex"`
 }
 
-// TFJobStatus define the status of TFJob
+// TFJobStatus define the most recently observed status of the TFJob.
 type TFJobStatus struct {
 	// Phase is the TFJob running phase
-	Phase  TFJobPhase `json:"phase"`
-	Reason string     `json:"reason"`
-	// Condition keeps ten most recent cluster conditions
+	Phase TFJobPhase `json:"phase"`
+
+	// Represents time when the TFJob was acknowledged by the TFJob controller.
+	// It is not guaranteed to be set in happens-before order across separate operations.
+	// It is represented in RFC3339 form and is in UTC.
+	// +optional
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+
+	// Represents time when the TFJob was completed. It is not guaranteed to
+	// be set in happens-before order across separate operations.
+	// It is represented in RFC3339 form and is in UTC.
+	// +optional
+	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
+
+	// Represents the latest available observations of a TFJob object's current state.
 	Conditions []*TFJobCondition `json:"conditions"`
+
+	// TFClusterStatus represents all of the tasks' status in the TF distributed cluster.
+	TFClusterStatus TFClusterStatus `json:"tfClusterStatus"`
 
 	// ReplicaStatuses specify the status of each TFReplica.
 	TFReplicaStatuses []*TFReplicaStatus `json:"tfReplicaStatuses"`
@@ -131,6 +146,20 @@ const (
 	// non-zero status or was terminated by the system.
 	TFJobFailed TFJobPhase = "Failed"
 )
+
+// TFClusterStatus represents a TensorFlow cluster status.
+// See: https://www.tensorflow.org/deploy/distributed
+//      https://www.tensorflow.org/api_docs/python/tf/train/ClusterSpec
+// It is a map from "job_name + task_index" to status (submitted, created, failed):
+// [
+//     "worker_0": "created",
+//     "worker_1": "created",
+//     "worker_2": "submitted",
+//     "worker_4": "failed",
+//     "ps_0": "created",
+//     "ps_1": "submitted",
+// ]
+type TFClusterStatus map[string]string
 
 // TFJobCondition describes the state of a TFJob at a certain point.
 type TFJobCondition struct {
